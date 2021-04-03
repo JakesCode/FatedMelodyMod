@@ -159,25 +159,34 @@ class TitleState extends MusicBeatState
 		logoBl.antialiasing = true;
 		logoBl.animation.addByPrefix('bump', 'logo bumpin', 15);
 		logoBl.animation.play('bump');
-		add(introElements);
 		introElements.add(logoBl);
 		logoBl.setGraphicSize(Math.floor(logoBl.width / 2), Math.floor(logoBl.height / 2));
 		logoBl.updateHitbox();
 		logoBl.setPosition(0, 0);
 		logoBl.screenCenter(X);
-
 		FlxTween.tween(logoBl, {y: logoBl.y + 15}, 0.6, {ease: FlxEase.quadInOut, type: PINGPONG});
 
-		var modName = new Alphabet(0, 0, "Fated Melody Mod", true, false);
-		introElements.add(modName);
-		modName.setPosition(FlxG.width / 2 - (modName.width / 2), 310);
-
+		
+		var modLogo:FlxSprite = new FlxSprite().loadGraphic(Paths.image('dlc'));
+		introElements.add(modLogo);
+		modLogo.setGraphicSize(Math.floor(modLogo.width / 2), Math.floor(modLogo.height / 2));
+		modLogo.updateHitbox();
+		modLogo.setPosition(FlxG.width / 2 + 75, 160);
+		modLogo.antialiasing = true;
+		modLogo.angle = -25;
+		FlxTween.tween(modLogo, {y: modLogo.y + 15}, 0.8, {ease: FlxEase.quadInOut, type: PINGPONG});
+		
+		
+		// var modName = new Alphabet(0, 0, "Fated Melody Mod", true, false);
+		// introElements.add(modName);
+		// modName.setPosition(FlxG.width / 2 - (modName.width / 2), 310);
+		
 		var pressEnter = new Alphabet(0, 0, "Press Enter", true, false);
 		introElements.add(pressEnter);
 		pressEnter.setPosition(FlxG.width / 2 - (pressEnter.width / 2), 500);
-
 		FlxTween.tween(pressEnter, {alpha: 0.5}, 0.5, {ease: FlxEase.elasticInOut, type: PINGPONG});
-
+		
+		
 		// titleText = new FlxSprite(125, 500);
 		// titleText.frames = Paths.getSparrowAtlas('titleEnter');
 		// titleText.animation.addByPrefix('idle', "Press Enter to Begin", 24);
@@ -186,7 +195,8 @@ class TitleState extends MusicBeatState
 		// titleText.animation.play('idle');
 		// titleText.updateHitbox();
 		// introElements.add(titleText);
-
+		
+		add(introElements);
 		introElements.visible = false;
 
 		// var logo:FlxSprite = new FlxSprite().loadGraphic(Paths.image('logo'));
@@ -340,10 +350,13 @@ class TitleState extends MusicBeatState
 		switch (curBeat)
 		{
 			case 4:
-				introTextArray = ["A mod for", "Friday Night Funkin'"];
+				introTextArray = ["A mod for", "Friday Night Funkin"];
 				createCoolText(introTextArray);
 			case 8:
-				introTextArray = ["With thanks to:", "ninjamuffin99", "PhantomArcade3K", "Evilsk8r", "Kawaisprite", "(For the original game!)"];
+				introTextArray = ["With thanks to:", "ninjamuffin99", "PhantomArcade3K", "Evilsk8r", "Kawaisprite", "", "(For the original game!)"];
+				createCoolText(introTextArray);
+			case 12:
+				introTextArray = ["Additional art", "and designs by", "", "Avery", "(Thank u!)"];
 				createCoolText(introTextArray);
 			// case 3:
 			// 	addMoreText('present');
