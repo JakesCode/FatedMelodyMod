@@ -76,7 +76,9 @@ class Alphabet extends FlxSpriteGroup
 				lastWasSpace = true;
 			}
 
-			if (AlphaCharacter.alphabet.indexOf(character.toLowerCase()) != -1)
+			if (AlphaCharacter.alphabet.indexOf(character.toLowerCase()) != -1 ||
+				AlphaCharacter.symbols.indexOf(character.toLowerCase()) != -1 ||
+				AlphaCharacter.numbers.indexOf(character.toLowerCase()) != -1 )
 				// if (AlphaCharacter.alphabet.contains(character.toLowerCase()))
 			{
 				if (lastSprite != null)
@@ -97,7 +99,20 @@ class Alphabet extends FlxSpriteGroup
 					letter.createBold(character);
 				else
 				{
-					letter.createLetter(character);
+					var isNumber:Bool = AlphaCharacter.numbers.contains(character);
+					var isSymbol:Bool = AlphaCharacter.symbols.contains(character);
+					if (isNumber)
+					{
+						letter.createNumber(character);
+					}
+					else if (isSymbol)
+					{
+						letter.createSymbol(character);
+					}
+					else
+					{
+						letter.createLetter(character);
+					}
 				}
 
 				add(letter);
@@ -237,7 +252,7 @@ class AlphaCharacter extends FlxSprite
 
 	public static var numbers:String = "1234567890";
 
-	public static var symbols:String = "|~#$%()*+-:;<=>@[]^_.,'!?";
+	public static var symbols:String = "|~#$%()*+-:;<=>@[]^_.,'!?/";
 
 	public var row:Int = 0;
 
@@ -300,6 +315,12 @@ class AlphaCharacter extends FlxSprite
 				animation.play(letter);
 			case "!":
 				animation.addByPrefix(letter, 'exclamation point', 24);
+				animation.play(letter);
+			case "=":
+				animation.addByPrefix(letter, '=', 24);
+				animation.play(letter);
+			case "/":
+				animation.addByPrefix(letter, 'forward slash', 24);
 				animation.play(letter);
 		}
 

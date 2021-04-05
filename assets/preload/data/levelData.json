@@ -1,0 +1,11 @@
+{
+    "location-one": {
+        "levelName": "Location One"
+    },
+    "location-two": {
+        "levelName": "Location Two"
+    },
+    "location-three": {
+        "levelName": "Location Three"
+    }
+}

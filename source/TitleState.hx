@@ -316,7 +316,7 @@ class TitleState extends MusicBeatState
 
 				trace(version);
 
-				FlxG.switchState(new MainMenuState());
+				FlxG.switchState(new LevelSelectState());
 			});
 		}
 
