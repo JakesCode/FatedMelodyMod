@@ -26,9 +26,12 @@ using StringTools;
 
 class LevelSelectState extends MusicBeatState
 {
+	var weekData:Array<Dynamic> = [
+		['intro']
+	];
 	var curPosition:Int = 0;
 	var levelProgression:Array<String> = [
-		"humble-beginnings",
+		"intro",
 		"location-2",
 		"location-3"
 	];
@@ -36,6 +39,17 @@ class LevelSelectState extends MusicBeatState
 	var grpLocations:FlxTypedGroup<FlxSprite> = new FlxTypedGroup<FlxSprite>();
 
 	var grpLevelInfo:FlxGroup = new FlxGroup();
+
+	var difficultySelectors:FlxGroup;
+	var sprDifficulty:FlxSprite;
+	var leftArrow:FlxSprite;
+	var rightArrow:FlxSprite;
+
+	var curDifficulty:Int = 1;
+
+	var showDifficultySelect:Bool = false;
+
+	var bfSprite = new HealthIcon('bf');
 
 	override function create()
 	{
@@ -61,7 +75,7 @@ class LevelSelectState extends MusicBeatState
 		DiscordClient.changePresence("In the Menus", null);
 		#end
 
-		levelData.set("humble-beginnings", ["name" => "Humble Beginnings", "levelPos" => "1/1"]);
+		levelData.set("intro", ["name" => "Intro", "levelPos" => "1/1"]);
 		levelData.set("location-2", ["name" => "Location Two", "levelPos" => "1/2"]);
 		levelData.set("location-3", ["name" => "Location Three", "levelPos" => "1/3"]);
 		
@@ -72,7 +86,6 @@ class LevelSelectState extends MusicBeatState
 
 		var dot_frames = Paths.getSparrowAtlas("dot");
 
-		var bfSprite = new HealthIcon('bf');
 		bfSprite.screenCenter();
 		bfSprite.setPosition(bfSprite.x, bfSprite.y - 100);
 		FlxTween.tween(bfSprite, {y: bfSprite.y + 10}, 0.5, {ease: FlxEase.quadInOut, type: PINGPONG});	
@@ -121,11 +134,47 @@ class LevelSelectState extends MusicBeatState
 		lvlPos.setPosition(0, FlxG.height - 170);
 		lvlPos.screenCenter(X);
 
-		var blackBG:FlxSprite = new FlxSprite(0, FlxG.height - 200).makeGraphic(FlxG.width, 200);
-		blackBG.color = 0xFFFFFF;
-		blackBG.alpha = 0.8;
-		add(blackBG);
+		var whiteBG:FlxSprite = new FlxSprite(0, FlxG.height - 200).makeGraphic(FlxG.width, 200);
+		whiteBG.color = 0xFFFFFF;
+		whiteBG.alpha = 0.8;
+		add(whiteBG);
 
+		// Difficulty Indicators //
+		difficultySelectors = new FlxGroup();
+		difficultySelectors.visible = showDifficultySelect;
+		add(difficultySelectors);
+
+		var difficultySelectorsBg:FlxSprite = new FlxSprite(0, 0).makeGraphic(FlxG.width, 125);
+		difficultySelectorsBg.color = 0x000000;
+		difficultySelectorsBg.alpha = 0.8;
+		difficultySelectors.add(difficultySelectorsBg);
+
+		sprDifficulty = new FlxSprite(0, 0);
+		sprDifficulty.frames = ui_tex;
+		sprDifficulty.animation.addByPrefix('easy', 'EASY');
+		sprDifficulty.animation.addByPrefix('normal', 'NORMAL');
+		sprDifficulty.animation.addByPrefix('hard', 'HARD');
+		sprDifficulty.screenCenter(X);
+		sprDifficulty.updateHitbox();
+		difficultySelectors.add(sprDifficulty);
+		sprDifficulty.setPosition(sprDifficulty.x + 15, difficultySelectorsBg.height / 2 - (sprDifficulty.height / 2));
+		sprDifficulty.animation.play('easy');
+		
+		leftArrow = new FlxSprite(sprDifficulty.x - 150, sprDifficulty.y + (sprDifficulty.height / 2) - 45);
+		leftArrow.frames = ui_tex;
+		leftArrow.animation.addByPrefix('idle', "arrow left");
+		leftArrow.animation.addByPrefix('press', "arrow push left");
+		leftArrow.animation.play('idle');
+		difficultySelectors.add(leftArrow);
+		
+		rightArrow = new FlxSprite(sprDifficulty.x + sprDifficulty.width + 70, sprDifficulty.y + (sprDifficulty.height / 2) - 45);
+		rightArrow.frames = ui_tex;
+		rightArrow.animation.addByPrefix('idle', 'arrow right');
+		rightArrow.animation.addByPrefix('press', "arrow push right", 24, false);
+		rightArrow.animation.play('idle');
+		difficultySelectors.add(rightArrow);
+		
+		changeDifficulty();
 		add(grpLevelInfo);
 		add(grpLocations);
 
@@ -148,14 +197,26 @@ class LevelSelectState extends MusicBeatState
 		// 	lock.y = grpWeekText.members[lock.ID].y;
 		// });
 
-		if (controls.LEFT_P)
-		{
-			changeSelection(-1);
-		}
-
-		if (controls.RIGHT_P)
-		{
-			changeSelection(1);
+		if(!showDifficultySelect) {
+			if (controls.LEFT_P)
+			{
+				changeSelection(-1);
+			}
+	
+			if (controls.RIGHT_P)
+			{
+				changeSelection(1);
+			}
+		} else {
+			if (controls.LEFT_P)
+			{
+				changeDifficulty(-1);
+			}
+	
+			if (controls.RIGHT_P)
+			{
+				changeDifficulty(1);
+			}
 		}
 
 		// if (!movedBack)
@@ -193,19 +254,54 @@ class LevelSelectState extends MusicBeatState
 
 		if (controls.ACCEPT)
 		{
-			selectLevel();
+			if(!showDifficultySelect && !stopSpamming)
+			{
+				showDifficultySelect = true;
+				difficultySelectors.visible = true;	
+			} else {
+				selectLevel();
+			}
 		}
 
 		if (controls.BACK)
 		{
-			FlxG.switchState(new TitleState());
+			if(showDifficultySelect && !stopSpamming) {
+				showDifficultySelect = false;
+				difficultySelectors.visible = false;
+			} else {
+				FlxG.switchState(new TitleState());
+			}
 		}
 
 		super.update(elapsed);
 	}
 
 	function selectLevel()
-	{	
+	{
+		FlxG.sound.music.stop();
+		FlxG.sound.play(Paths.sound('tapeStop'));
+		FlxTween.tween(bfSprite, {y: 0 - bfSprite.height}, 1, {ease: FlxEase.elasticInOut, type: ONESHOT});
+		new FlxTimer().start(1, function(tmr:FlxTimer)
+		{
+			bfSprite.visible = false;
+			var diffic = "";
+
+			switch (curDifficulty)
+			{
+				case 0:
+					diffic = '-easy';
+				case 2:
+					diffic = '-hard';
+			}
+
+			PlayState.storyPlaylist = weekData[curPosition];
+			PlayState.isStoryMode = true;
+			PlayState.storyDifficulty = curDifficulty;
+			PlayState.SONG = Song.loadFromJson(PlayState.storyPlaylist[0].toLowerCase() + diffic, PlayState.storyPlaylist[0].toLowerCase());
+			PlayState.campaignScore = 0;
+
+			LoadingState.loadAndSwitchState(new PlayState(), true);
+		});
 	}
 
 	// function selectWeek()
@@ -247,42 +343,42 @@ class LevelSelectState extends MusicBeatState
 	// 	}
 	// }
 
-	// function changeDifficulty(change:Int = 0):Void
-	// {
-	// 	curDifficulty += change;
+	function changeDifficulty(change:Int = 0):Void
+	{
+		curDifficulty += change;
 
-	// 	if (curDifficulty < 0)
-	// 		curDifficulty = 2;
-	// 	if (curDifficulty > 2)
-	// 		curDifficulty = 0;
+		if (curDifficulty < 0)
+			curDifficulty = 2;
+		if (curDifficulty > 2)
+			curDifficulty = 0;
 
-	// 	sprDifficulty.offset.x = 0;
+		sprDifficulty.offset.x = 0;
 
-	// 	switch (curDifficulty)
-	// 	{
-	// 		case 0:
-	// 			sprDifficulty.animation.play('easy');
-	// 			sprDifficulty.offset.x = 20;
-	// 		case 1:
-	// 			sprDifficulty.animation.play('normal');
-	// 			sprDifficulty.offset.x = 70;
-	// 		case 2:
-	// 			sprDifficulty.animation.play('hard');
-	// 			sprDifficulty.offset.x = 20;
-	// 	}
+		switch (curDifficulty)
+		{
+			case 0:
+				sprDifficulty.animation.play('easy');
+				sprDifficulty.offset.x = 20;
+			case 1:
+				sprDifficulty.animation.play('normal');
+				sprDifficulty.offset.x = 70;
+			case 2:
+				sprDifficulty.animation.play('hard');
+				sprDifficulty.offset.x = 20;
+		}
 
-	// 	sprDifficulty.alpha = 0;
+		sprDifficulty.alpha = 0;
 
-	// 	// USING THESE WEIRD VALUES SO THAT IT DOESNT FLOAT UP
-	// 	sprDifficulty.y = leftArrow.y - 15;
-	// 	intendedScore = Highscore.getWeekScore(curWeek, curDifficulty);
+		// USING THESE WEIRD VALUES SO THAT IT DOESNT FLOAT UP
+		// sprDifficulty.y = leftArrow.y - 15;
+		// intendedScore = Highscore.getWeekScore(curWeek, curDifficulty);
 
-	// 	#if !switch
-	// 	intendedScore = Highscore.getWeekScore(curWeek, curDifficulty);
-	// 	#end
+		#if !switch
+		// intendedScore = Highscore.getWeekScore(curWeek, curDifficulty);
+		#end
 
-	// 	FlxTween.tween(sprDifficulty, {y: leftArrow.y + 15, alpha: 1}, 0.07);
-	// }
+		FlxTween.tween(sprDifficulty, {alpha: 1}, 0.07);
+	}
 
 	// var lerpScore:Int = 0;
 	// var intendedScore:Int = 0;
